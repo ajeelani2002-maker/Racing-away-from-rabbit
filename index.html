@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Racing Chase Game</title>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial;
+    background: #222;
+    color: white;
+    text-align: center;
+  }
+  canvas {
+    background: #333;
+    display: block;
+    margin: auto;
+  }
+  .controls {
+    position: fixed;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+  }
+  button {
+    font-size: 20px;
+    padding: 15px;
+    margin: 5px;
+  }
+</style>
+</head>
+<body>
+
+<h2>🚗 Racing Game</h2>
+<p>Coins: <span id="coins">0</span></p>
+<canvas id="game" width="800" height="400"></canvas>
+
+<div class="controls">
+  <button onclick="move('left')">⬅️</button>
+  <button onclick="move('up')">⬆️</button>
+  <button onclick="move('down')">⬇️</button>
+  <button onclick="move('right')">➡️</button>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = { x: 50, y: 200, speed: 4 };
+let police = { x: 0, y: 200, speed: 2 };
+let coins = 0;
+
+// 7 Areas with EASY pricing (balanced like you wanted)
+let areas = [
+  { name: "Area 1", price: 0, unlocked: true, multiplier: 1 },
+  { name: "Area 2", price: 20, unlocked: false, multiplier: 2 },
+  { name: "Area 3", price: 40, unlocked: false, multiplier: 3 },
+  { name: "Area 4", price: 70, unlocked: false, multiplier: 4 },
+  { name: "Area 5", price: 100, unlocked: false, multiplier: 5 },
+  { name: "Area 6", price: 140, unlocked: false, multiplier: 6 },
+  { name: "Area 7", price: 180, unlocked: false, multiplier: 7 }
+];
+
+let currentArea = 0;
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // player
+  ctx.fillStyle = "blue";
+  ctx.fillRect(player.x, player.y, 20, 20);
+
+  // police
+  ctx.fillStyle = "red";
+  ctx.fillRect(police.x, police.y, 20, 20);
+
+  // finish line
+  ctx.fillStyle = "white";
+  ctx.fillRect(750, 0, 5, 400);
+
+  // UI text
+  ctx.fillStyle = "white";
+  ctx.fillText("Area: " + areas[currentArea].name, 10, 20);
+}
+
+function update() {
+  // police chase
+  if (police.x < player.x) police.x += police.speed;
+  if (police.y < player.y) police.y += police.speed;
+
+  // win condition (reach finish)
+  if (player.x > 740) {
+    coins += 8 * areas[currentArea].multiplier;
+    document.getElementById("coins").innerText = coins;
+    player.x = 50;
+
+    // unlock next area if possible
+    if (currentArea < areas.length - 1) {
+      let next = areas[currentArea + 1];
+      if (coins >= next.price) {
+        next.unlocked = true;
+        currentArea++;
+      }
+    }
+  }
+
+  // police catches player
+  if (Math.abs(player.x - police.x) < 10) {
+    alert("Caught! Restarting...");
+    player.x = 50;
+    police.x = 0;
+  }
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+
+// PC controls
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") player.x += player.speed;
+  if (e.key === "ArrowLeft") player.x -= player.speed;
+  if (e.key === "ArrowUp") player.y -= player.speed;
+  if (e.key === "ArrowDown") player.y += player.speed;
+});
+
+// Mobile controls
+function move(dir) {
+  if (dir === "left") player.x -= player.speed;
+  if (dir === "right") player.x += player.speed;
+  if (dir === "up") player.y -= player.speed;
+  if (dir === "down") player.y += player.speed;
+}
+</script>
+
+</body>
+  </html>
