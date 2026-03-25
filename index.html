@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Racing Chase Game</title>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial;
+    background: #222;
+    color: white;
+    text-align: center;
+  }
+  canvas {
+    background: #333;
+    display: block;
+    margin: auto;
+  }
+  .controls {
+    position: fixed;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+  }
+  button {
+    font-size: 20px;
+    padding: 15px;
+    margin: 5px;
+  }
+</style>
+</head>
+<body>
+
+<h2>🚗 Racing Chase Game</h2>
+<p>Coins: <span id="coins">0</span></p>
+
+<canvas id="game" width="800" height="400"></canvas>
+
+<div class="controls">
+  <button onclick="move('left')">⬅️</button>
+  <button onclick="move('up')">⬆️</button>
+  <button onclick="move('down')">⬇️</button>
+  <button onclick="move('right')">➡️</button>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = { x: 50, y: 200, speed: 4 };
+
+// Police starts FAR behind (fixed)
+let police = { x: -200, y: 200, speed: 2 };
+
+let coins = 0;
+
+// 7 Areas (easy and balanced prices)
+let areas = [
+  { name: "Area 1", price: 0, unlocked: true, multiplier: 1 },
+  { name: "Area 2", price: 20, unlocked: false, multiplier: 2 },
+  { name: "Area 3", price: 40, unlocked: false, multiplier: 3 },
+  { name: "Area 4", price: 70, unlocked: false, multiplier: 4 },
+  { name: "Area 5", price: 100, unlocked: false, multiplier: 5 },
+  { name: "Area 6", price: 140, unlocked: false, multiplier: 6 },
+  { name: "Area 7", price: 180, unlocked: false, multiplier: 7 }
+];
+
+let currentArea = 0;
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Player
+  ctx.fillStyle = "blue";
+  ctx.fillRect(player.x, player.y, 20, 20);
+
+  // Police
+  ctx.fillStyle = "red";
+  ctx.fillRect(police.x, police.y, 20, 20);
+
+  // Finish line
+  ctx.fillStyle = "white";
+  ctx.fillRect(750, 0, 5, 400);
+
+  // Info
+  ctx.fillStyle = "white";
+  ctx.fillText("Area: " + areas[currentArea].name, 10, 20);
+}
+
+function update() {
+  // Police chase
+  if (police.x < player.x) police.x += police.speed;
+  if (police.y < player.y) police.y += police.speed;
+
+  // Finish line
+  if (player.x > 740) {
+    coins += 8 * areas[currentArea].multiplier;
+    document.getElementById("coins").innerText = coins;
+
+    player.x = 50;
+
+    // Unlock next area if enough coins
+    if (currentArea < areas.length - 1) {
+      let next = areas[currentArea + 1];
+      if (coins >= next.price) {
+        next.unlocked = true;
+        currentArea++;
+      }
+    }
+  }
+
+  // Caught by police
+  if (Math.abs(player.x - police.x) < 10) {
+    alert("Caught! Restarting...");
+    player.x = 50;
+    police.x = -200;
+  }
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+
+// PC Controls
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") player.x += player.speed;
+  if (e.key === "ArrowLeft") player.x -= player.speed;
+  if (e.key === "ArrowUp") player.y -= player.speed;
+  if (e.key === "ArrowDown") player.y += player.speed;
+});
+
+// Mobile Controls
+function move(dir) {
+  if (dir === "left") player.x -= player.speed;
+  if (dir === "right") player.x += player.speed;
+  if (dir === "up") player.y -= player.speed;
+  if (dir === "down") player.y += player.speed;
+}
+</script>
+
+</body>
+  </html>
